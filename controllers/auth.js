@@ -16,6 +16,7 @@ const verifyUser = async (req, res, next) => {
       });
     } else {
       if (renewToken(req, res)) next();
+      else return res.json({ success: false, msg: "Something went wrong" });
     }
   } catch (e) {
     console.log(e);
@@ -33,7 +34,7 @@ const renewToken = async (req, res) => {
         "jwt-refresh-token-secret-key",
         (err, decoded) => {
           if (err) {
-            return res.json({ success: false, msg: "Invalid Refresh Token" });
+            return exist;
           } else {
             const accessToken = jwt.sign(
               { email: decoded.email },
@@ -46,9 +47,8 @@ const renewToken = async (req, res) => {
         }
       );
     } else {
-      return res.json({ success: false, msg: "No Refresh Token" });
+      return exist;
     }
-    return exist;
   } catch (e) {
     console.log(e);
   }
@@ -103,7 +103,6 @@ const getUser = async (req, res) => {
             maxAge: 300000,
             // httpOnly: true,
             secure: true,
-            // sameSite: "strict",
             sameSite: "None",
             path: "/",
             domain: ".netlify.app",
