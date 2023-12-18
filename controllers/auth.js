@@ -1,6 +1,7 @@
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import cookie from "cookie";
 
 const verifyUser = async (req, res, next) => {
   try {
@@ -95,6 +96,7 @@ const getUser = async (req, res) => {
     if (user) {
       bcrypt.compare(password, user.password, async (err, same) => {
         if (same) {
+          setCookie(req, res);
           const accessToken = jwt.sign(
             { email: email },
             "jwt-access-token-secret-key",
@@ -108,7 +110,7 @@ const getUser = async (req, res) => {
           await res.cookie("accessToken", accessToken, { maxAge: 10000 });
           await res.cookie("refreshToken", refreshToken, {
             maxAge: 20000,
-            // httpOnly: true,
+            httpOnly: true,
             secure: true,
             sameSite: "None",
             // path: "/",
@@ -126,5 +128,23 @@ const getUser = async (req, res) => {
     console.log(e);
   }
 };
+
+function setCookie(req, res) {
+  console.log("text from setCookie");
+  const cookieOptions = {
+    maxAge: 24 * 60 * 60 * 1000, // Cookie expires in 1 day
+    // httpOnly: true, // Makes the cookie accessible only via HTTP(S)
+    // Other options like secure, sameSite can also be added
+  };
+
+  const cookieValue = "cookieValue";
+  const serializedCookie = cookie.serialize(
+    "cookieName",
+    cookieValue,
+    cookieOptions
+  );
+
+  res.setHeader("Set-Cookie", serializedCookie);
+}
 
 export { registerUser, getUser, isAuthorized, verifyUser };
