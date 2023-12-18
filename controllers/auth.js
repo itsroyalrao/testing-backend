@@ -105,8 +105,8 @@ const getUser = async (req, res) => {
             secure: true,
             // sameSite: "strict",
             sameSite: "None",
-            // path: "/",
-            // domain: ".netlify.app",
+            path: "/",
+            domain: ".netlify.app",
           });
           return res.json({ success: true });
         } else {
