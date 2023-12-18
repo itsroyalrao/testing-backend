@@ -14,7 +14,7 @@ app.use(express.json()); // parse data from req.body
 app.use(cookieParser()); // parse data from req.cookies
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: ["http://localhost:5173", "https://0th.netlify.app"],
     credentials: true,
   })
 );
