@@ -101,9 +101,9 @@ const getUser = async (req, res) => {
           res.cookie("accessToken", accessToken, { maxAge: 60000 });
           res.cookie("refreshToken", refreshToken, {
             maxAge: 300000,
-            httpOnly: true,
+            // httpOnly: true,
             secure: true,
-            sameSite: "strict",
+            // sameSite: "strict",
           });
           return res.json({ success: true });
         } else {
