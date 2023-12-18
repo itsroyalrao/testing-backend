@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 const verifyUser = async (req, res, next) => {
   try {
     const accessToken = req.cookies.accessToken;
+    console.log(req.cookies);
     if (accessToken) {
       jwt.verify(accessToken, "jwt-access-token-secret-key", (err, decoded) => {
         if (err) {
@@ -15,8 +16,12 @@ const verifyUser = async (req, res, next) => {
         }
       });
     } else {
-      if (renewToken(req, res)) next();
-      else return res.json({ success: false, msg: "Something went wrong" });
+      const renewed = await renewToken(req, res);
+      console.log("renewed", renewed);
+      if (renewed) {
+        console.log("hello");
+        next();
+      } else return res.json({ success: false, msg: "Something went wrong" });
     }
   } catch (e) {
     console.log(e);
@@ -25,29 +30,31 @@ const verifyUser = async (req, res, next) => {
 
 const renewToken = async (req, res) => {
   try {
-    let exist = false;
-
     const refreshToken = req.cookies.refreshToken;
+    console.log("refreshToken", refreshToken);
     if (refreshToken) {
       jwt.verify(
         refreshToken,
         "jwt-refresh-token-secret-key",
-        (err, decoded) => {
+        async (err, decoded) => {
           if (err) {
-            return exist;
+            console.log("world");
+            return false;
           } else {
+            console.log("sdbvjbsdmbvmdsv");
             const accessToken = jwt.sign(
               { email: decoded.email },
               "jwt-access-token-secret-key",
               { expiresIn: "1m" }
             );
-            res.cookie("accessToken", accessToken, { maxAge: 60000 });
-            exist = true;
+            await res.cookie("accessToken", accessToken, { maxAge: 10000 });
           }
         }
       );
+      return true;
     } else {
-      return exist;
+      console.log("Namaste");
+      return false;
     }
   } catch (e) {
     console.log(e);
@@ -86,7 +93,7 @@ const getUser = async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (user) {
-      bcrypt.compare(password, user.password, (err, same) => {
+      bcrypt.compare(password, user.password, async (err, same) => {
         if (same) {
           const accessToken = jwt.sign(
             { email: email },
@@ -98,14 +105,14 @@ const getUser = async (req, res) => {
             "jwt-refresh-token-secret-key",
             { expiresIn: "5m" }
           );
-          res.cookie("accessToken", accessToken, { maxAge: 60000 });
-          res.cookie("refreshToken", refreshToken, {
-            maxAge: 300000,
+          await res.cookie("accessToken", accessToken, { maxAge: 10000 });
+          await res.cookie("refreshToken", refreshToken, {
+            maxAge: 20000,
             // httpOnly: true,
             secure: true,
             sameSite: "None",
-            path: "/",
-            domain: ".netlify.app",
+            // path: "/",
+            // domain: ".netlify.app",
           });
           return res.json({ success: true });
         } else {
